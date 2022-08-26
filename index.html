@@ -92,6 +92,8 @@
         return y;
     }
     function luckGo() {
+        detail.innerHTML = '';
+        detailInfo = '';
         var type = radio[0].checked ? '1' : '2';
         var time = Number(number.value);
         if (time === '') return;
