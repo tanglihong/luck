@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,viewport-fit=cover">
+    <style>
+        * {
+            font-size: 16px;
+        }
+        #showDetailBtn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <input type="radio" name="type" value="1" checked>大乐透
+    <input type="radio" name="type" value="2">双色球
+    <br>
+    <input id="number" type="number" placeholder="随机次数">
+    <button id="go" onclick="luckGo()">go</button>
+    <div id="result"></div>
+    <button id="showDetailBtn" onclick="showDetail()">查看详细</button>
+    <div id="detail"></div>
+</div>
+<script>
+    var radio = document.getElementsByName("type");
+    var number = document.getElementById("number");
+    var result = document.getElementById("result");
+    var showDetailBtn = document.getElementById("showDetailBtn");
+    var detail = document.getElementById("detail");
+    var detailInfo = '';
+
+    function getOneGroupNumber(type) {
+        var i = 0, k = 0;
+        var redArr = [];
+        var blueArr = [];
+        var redNum = type === '1' ? 5 : 6;
+        var blueNum = type === '1' ? 2 : 1;
+        var redMax = type === '1' ? 35 : 33;
+        var blueMax = type === '1' ? 12 : 16;
+        while (i < redNum) {
+            var red = Math.floor(Math.random() * redMax + 1);
+            if (redArr.indexOf(red) === -1) {
+                redArr.push(red);
+                i++;
+            }
+        }
+        while (k < blueNum) {
+            var blue = Math.floor(Math.random() * blueMax + 1);
+            if (blueArr.indexOf(blue) === -1) {
+                blueArr.push(blue);
+                k++;
+            }
+        }
+        return {
+            red: redArr,
+            blue: blueArr
+        }
+    }
+    function findMost(arr, n) {
+        var x = arr.reduce(function (result, item) {
+            result[item] = result[item] || {count: 0};
+            ++result[item].count;
+            return result;
+        }, {});
+        var y = Object.keys(x).sort(function (a, b) {
+            return x[b].count - x[a].count;
+        }).slice(0, n);
+        y.forEach(function (e) {
+            detailInfo += `其中${e}出现次数: ${x[e].count}<br>`;
+        });
+        return y;
+    }
+    function luckGo() {
+        var type = radio[0].checked ? '1' : '2';
+        var time = Number(number.value);
+        if (time === '') return;
+        var allRed = [];
+        var allBlue = [];
+        for (var i = 0; i < time; i++) {
+            var oneGroup = getOneGroupNumber(type);
+            allRed.push(...oneGroup['red']);
+            allBlue.push(...oneGroup['blue']);
+        }
+        var front = findMost(allRed, type === '1' ? 5 : 6);
+        var end = findMost(allBlue, type === '1' ? 2 : 1);
+        result.innerHTML = `
+        前区：${front}
+        后区：${end}<br>
+        `;
+        showDetailBtn.style.display = 'block';
+    }
+    function showDetail() {
+        if (detailInfo === '') return;
+        detail.innerHTML = detailInfo;
+    }
+</script>
+</body>
+</html>
