@@ -33,8 +33,8 @@
 </head>
 <body>
 <div class="box">
-    <input type="radio" name="type" value="1" checked>大乐透
-    <input type="radio" name="type" value="2">双色球
+    <input type="radio" name="type" value="1" checked onchange="change()">大乐透
+    <input type="radio" name="type" value="2" onchange="change()">双色球
     <br>
     <input id="number" type="number" placeholder="随机次数">
     <button id="go" onclick="luckGo()">go</button>
@@ -49,6 +49,10 @@
     var showDetailBtn = document.getElementById("showDetailBtn");
     var detail = document.getElementById("detail");
     var detailInfo = '';
+
+    function getCurrentDate() {
+        return `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`;
+    }
 
     function getOneGroupNumber(type) {
         var i = 0, k = 0;
@@ -77,6 +81,7 @@
             blue: blueArr
         }
     }
+
     function findMost(arr, n) {
         var x = arr.reduce(function (result, item) {
             result[item] = result[item] || {count: 0};
@@ -91,12 +96,17 @@
         });
         return y;
     }
+
     function luckGo() {
+        var currentDate = getCurrentDate();
+        var luckItem1 = JSON.parse(localStorage.getItem('luck1'));
+        var luckItem2 = JSON.parse(localStorage.getItem('luck2'));
+        var type = radio[0].checked ? '1' : '2';
+        if (number.value === '' || (type === '1' && luckItem1 && currentDate === luckItem1[0]) || (type === '2' && luckItem2 && currentDate === luckItem2[0])) return;
         detail.innerHTML = '';
         detailInfo = '';
-        var type = radio[0].checked ? '1' : '2';
+        result.innerHTML = '幸运生成中...';
         var time = Number(number.value);
-        if (time === '') return;
         var allRed = [];
         var allBlue = [];
         for (var i = 0; i < time; i++) {
@@ -106,16 +116,33 @@
         }
         var front = findMost(allRed, type === '1' ? 5 : 6);
         var end = findMost(allBlue, type === '1' ? 2 : 1);
-        result.innerHTML = `
-        前区：${front}
-        后区：${end}<br>
-        `;
+        result.innerHTML = `前区：${front} 后区：${end}<br>`;
         showDetailBtn.style.display = 'block';
+
+        localStorage.setItem('luck' + type, JSON.stringify([`${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`, front, end]));
     }
+    
+    function change() {
+        showResult(radio[0].checked ? JSON.parse(localStorage.getItem('luck1')) : JSON.parse(localStorage.getItem('luck2')));
+    }
+
     function showDetail() {
         if (detailInfo === '') return;
         detail.innerHTML = detailInfo;
     }
+
+    function showResult(luck) {
+        var currentDate = getCurrentDate();
+        if (luck && currentDate === luck[0]) {
+            result.innerHTML = `今日幸运已生成<br>前区：${luck[1]} 后区：${luck[2]}<br>`;
+        } else {
+            result.innerHTML = '';
+        }
+    }
+
+    (function () {
+        showResult(JSON.parse(localStorage.getItem('luck1')));
+    })();
 </script>
 </body>
 </html>
